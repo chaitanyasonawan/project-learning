@@ -3,35 +3,42 @@ pipeline {
 
     stages {
 
-        stage('Checkout Code') {
+        stage('Clone Repository') {
             steps {
                 git branch: 'main',
-                    url: 'git@github.com:chaitanyasonawane/project-learning.git'
+                    url: 'https://github.com/chaitanyasonawan/project-learning.git'
             }
         }
 
-        stage('Deploy to Nginx') {
+        stage('Validate Files') {
             steps {
                 sh '''
-                    echo "Deploying static website..."
+                echo "Validating HTML..."
+                ls *.html
 
-                    sudo rm -rf /var/www/html/*
-                    sudo cp -r * /var/www/html/
+                echo "Validating CSS..."
+                ls *.css
 
-                    sudo systemctl restart nginx
-
-                    echo "Deployment successful"
+                echo "Validating JavaScript..."
+                ls *.js
                 '''
             }
         }
-    }
 
-    post {
-        success {
-            echo 'Website deployed successfully 🎉'
+        stage('Build Docker Image') {
+            steps {
+                sh 'docker build -t project-learning-web .'
+            }
         }
-        failure {
-            echo 'Deployment failed ❌'
+
+        stage('Run Docker Container') {
+            steps {
+                sh '''
+                docker stop web || true
+                docker rm web || true
+                docker run -d -p 8080:80 --name web project-learning-web
+                '''
+            }
         }
     }
 }
