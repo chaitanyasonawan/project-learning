@@ -36,7 +36,7 @@ pipeline {
                 sh '''
                 docker stop web || true
                 docker rm web || true
-                docker run -d -p 8080:80 --name web project-learning-web
+                docker run -d -p 8081:80 --name web project-learning-web
                 '''
             }
         }
